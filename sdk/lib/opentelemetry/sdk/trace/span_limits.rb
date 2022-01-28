@@ -47,6 +47,11 @@ module OpenTelemetry
 
           @attribute_count_limit = attribute_count_limit
           @attribute_length_limit = attribute_length_limit.nil? ? nil : Integer(attribute_length_limit)
+
+          event_attribute_count_limit = ENV.fetch('OTEL_EVENT_ATTRIBUTE_VALUE_LENGTH_LIMIT', @attribute_length_limit)
+          link_attribute_count_limit = ENV.fetch('OTEL_LINK_ATTRIBUTE_VALUE_LENGTH_LIMIT', @attribute_length_limit)
+          @event_attribute_length_limit = event_attribute_count_limit.nil? ? nil : Integer(event_attribute_count_limit)
+          @link_attribute_length_limit = link_attribute_count_limit.nil? ? nil : Integer(link_attribute_count_limit)
           @event_count_limit = event_count_limit
           @link_count_limit = link_count_limit
           @event_attribute_count_limit = event_attribute_count_limit
