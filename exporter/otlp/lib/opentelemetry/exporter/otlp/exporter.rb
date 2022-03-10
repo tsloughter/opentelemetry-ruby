@@ -49,9 +49,12 @@ module OpenTelemetry
                        headers: config_opt('OTEL_EXPORTER_OTLP_TRACES_HEADERS', 'OTEL_EXPORTER_OTLP_HEADERS', default: {}),
                        compression: config_opt('OTEL_EXPORTER_OTLP_TRACES_COMPRESSION', 'OTEL_EXPORTER_OTLP_COMPRESSION', default: 'gzip'),
                        timeout: config_opt('OTEL_EXPORTER_OTLP_TRACES_TIMEOUT', 'OTEL_EXPORTER_OTLP_TIMEOUT', default: 10),
-                       metrics_reporter: nil)
+                       metrics_reporter: nil,
+                       protocol: config_opt('OTEL_EXPORTER_OTLP_PROTOCOL', 'OTEL_EXPORTER_OTLP_TRACES_PROTOCOL', default: 'http/protobuf'))
           raise ArgumentError, "invalid url for OTLP::Exporter #{endpoint}" if invalid_url?(endpoint)
           raise ArgumentError, "unsupported compression key #{compression}" unless compression.nil? || %w[gzip none].include?(compression)
+          raise ArgumentError, "invalid protocol #{protocol}" if invalid_protocol?(protocol)
+          raise ArgumentError, "unsupported protocol #{protocol}" if unsupported_protocol?(protocol)
 
           @uri = if endpoint == ENV['OTEL_EXPORTER_OTLP_ENDPOINT']
                    URI("#{endpoint}/v1/traces")
@@ -133,6 +136,14 @@ module OpenTelemetry
           false
         rescue URI::InvalidURIError
           true
+        end
+
+        def invalid_protocol?(protocol)
+          protocol == 'http/protobuf' || protocol == 'grpc' || protocol == 'http/json'
+        end
+
+        def unsupported_protocol?(protocol)
+          protocol != 'http/protobuf'
         end
 
         # The around_request is a private method that provides an extension
